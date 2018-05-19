@@ -3,16 +3,59 @@ import time
 import json
 import argparse
 
-def parser():
+# def parser():
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('--addr', help='use this option to choose server IP')
+#     parser.add_argument('-p', '--port', help='use this option to choose server port')
+#     args = parser.parse_args()
+#     addr = '127.0.0.1'
+#     port = 7777
+#     if args.port: port = int(args.port)
+#     if args.addr: addr = args.addr
+#     return addr, port
+def parser(): #It returns IP address and port if they are was given
     parser = argparse.ArgumentParser()
-    parser.add_argument('--addr', help='use this option to choose server IP')
+    parser.add_argument('-a', '--addr', help='use this option to choose IP for listening')
     parser.add_argument('-p', '--port', help='use this option to choose server port')
     args = parser.parse_args()
     addr = '127.0.0.1'
     port = 7777
-    if args.port: port = int(args.port)
-    if args.addr: addr = args.addr
+    if args.port and _chk_port_value(args.port): port = int(args.port)
+    if args.addr and _chk_ip_value(args.addr): addr = args.addr
     return addr, port
+
+def _chk_ip_value(value):
+    err_text = 'IP address supposed to be 4 integer number separated by ".", not {}'
+    test_value = value.split('.')
+    if len(test_value) != 4:
+        print(err_text.format(value))
+    else:
+        for x in test_value:
+            try:
+                x = int(x)
+            except ValueError:
+                print(err_text.format(value))
+                return False
+            else:
+                if int(x) < 0 or int(x) > 254:
+                    print(err_text.format(value))
+                    return False
+        return True
+
+
+def _chk_port_value(value):
+    try:
+        port = int(value)
+    except ValueError:
+        print('Port supposed to be integer value, not {}. Now we are using 7777'.format(port))
+        return False
+    else:
+        if port > 65534 or port < 1024:
+            print('Port supposed to be between 1024 and 65535, not {}. Now we are using 7777'.format(port))
+            return False
+        else:
+            return True
+
 
 
 class Client:
@@ -29,7 +72,7 @@ class Client:
                     'time': time.time(),
                     'login': 'max'
                     }
-        for key, value in kwargs: #to put actual login or any additiona information we'll use kwargs
+        for key, value in kwargs: #to put actual login or any additional information we'll use the kwargs
             presence[key] = value
         return presence
 
