@@ -23,9 +23,13 @@ def _chk_ip_value(value):
     if len(test_value) != 4:
         print(err_text.format(value))
     else:
+        counter = 0
         for x in test_value:
             try:
                 x = int(x)
+                if x == 0 and counter == 0:
+                    print('IP address couldn\'t be started of zero')
+                    return False
             except ValueError:
                 print(err_text.format(value))
                 return False
@@ -33,6 +37,7 @@ def _chk_ip_value(value):
                 if int(x) < 0 or int(x) > 254:
                     print(err_text.format(value))
                     return False
+                counter += 1
         return True
 
 
@@ -40,11 +45,11 @@ def _chk_port_value(value):
     try:
         port = int(value)
     except ValueError:
-        print('Port supposed to be integer value, not {}. Now we are using 7777'.format(port))
+        print('Port supposed to be integer value, not {}. Now we\'ll use 7777'.format(value))
         return False
     else:
         if port > 65534 or port < 1024:
-            print('Port supposed to be between 1024 and 65535, not {}. Now we are using 7777'.format(port))
+            print('Port supposed to be between 1024 and 65535, not {}. Now we\'ll use 7777'.format(value))
             return False
         else:
             return True
@@ -85,9 +90,10 @@ class Server:
             return False
 
     def create_response(self, *args, **kwargs):
-        response = {'response': args[0], 'time': time.time()} #first argument supposed to be code server's response
-        for key, value in kwargs:#if we need to create special responce, we just give kwargs dictionary.
+        response = {'response': args[0], 'time': 'time'} #first argument supposed to be code server's response
+        for key, value in kwargs.items():#if we need to create special responce, we just give kwargs dictionary.
             response[key] = value
+        print(response)
         return response
 
     def _dict_to_bytes(self, message):
@@ -112,9 +118,9 @@ class Server:
                 try:
                     incoming_message = self.get_message(client.socket)
                     if self.chk_fields(incoming_message):
-                        response = self.create_response('200')
+                        response = self.create_response('200', time = time.time())
                     else:
-                        response = self.create_response('400')
+                        response = self.create_response('400', time = time.time())
                     self.send_message(response, client.socket)
                     sys.exit(0)
                 except OSError:
@@ -122,10 +128,10 @@ class Server:
             finally:
                 self.mainloop()
 
-
-addr, port = parser()
-server = Server(addr, port)
-server.mainloop()
+if __name__ == '__main__':
+    addr, port = parser()
+    server = Server(addr, port)
+    server.mainloop()
 
 
 

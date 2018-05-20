@@ -24,6 +24,7 @@ def parser(): #It returns IP address and port if they are was given
     if args.addr and _chk_ip_value(args.addr): addr = args.addr
     return addr, port
 
+
 def _chk_ip_value(value):
     err_text = 'IP address supposed to be 4 integer number separated by ".", not {}'
     test_value = value.split('.')
@@ -55,7 +56,6 @@ def _chk_port_value(value):
             return False
         else:
             return True
-
 
 
 class Client:
