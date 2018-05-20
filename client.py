@@ -3,16 +3,6 @@ import time
 import json
 import argparse
 
-# def parser():
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('--addr', help='use this option to choose server IP')
-#     parser.add_argument('-p', '--port', help='use this option to choose server port')
-#     args = parser.parse_args()
-#     addr = '127.0.0.1'
-#     port = 7777
-#     if args.port: port = int(args.port)
-#     if args.addr: addr = args.addr
-#     return addr, port
 def parser(): #It returns IP address and port if they are was given
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--addr', help='use this option to choose IP for listening')
@@ -95,15 +85,15 @@ class Client:
         message = self.bytes_to_dict(b_message)
         return message
 
-addr, port = parser()
-client = Client(addr, port)
-client.connect()
-presence = client.create_presence()
-client.send_message(presence)
-s_response = client.get_message()
-if s_response['response'] == '200':
-    print('Everything well')
-else:
-    print('there are error number {}'.format(s_response['response']))
-print(s_response)
-
+if __name__ == '__main__':
+    addr, port = parser()
+    client = Client(addr, port)
+    client.connect()
+    presence = client.create_presence()
+    client.send_message(presence)
+    s_response = client.get_message()
+    if s_response['response'] == '200':
+        print('Everything well')
+    else:
+        print('there are error number {}'.format(s_response['response']))
+    print(s_response)
