@@ -1,7 +1,7 @@
 import server
 import time
 import socket
-import pytest
+
 
 def test_chk_ip_value():
     assert server._chk_ip_value('127.0.0.1')
@@ -34,7 +34,7 @@ class TestServer:
         messages = [{'time': time.time(), 'login': 'max'},
                     {'action': 'presence', 't1me': time.time(), 'login': 'max'},
                     {'action': 'presence_might_to_be_alive_forever', 'time': time.time(), 'login': 'max'}
-        ]
+                    ]
         for message in messages:
             assert not x.chk_fields(message)
 
@@ -71,5 +71,3 @@ class TestServer:
             assert d == message
         del x
 
-# test = TestServer()
-# test.test_dict_to_bytes()

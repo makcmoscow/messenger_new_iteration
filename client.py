@@ -16,39 +16,6 @@ def parser(): #It returns IP address and port if they are was given
     return addr, port
 
 
-# def _chk_ip_value(value):
-#     err_text = 'IP address supposed to be 4 integer number separated by ".", not {}'
-#     test_value = value.split('.')
-#     if len(test_value) != 4:
-#         print(err_text.format(value))
-#     else:
-#         for x in test_value:
-#             try:
-#                 x = int(x)
-#             except ValueError:
-#                 print(err_text.format(value))
-#                 return False
-#             else:
-#                 if int(x) < 0 or int(x) > 254:
-#                     print(err_text.format(value))
-#                     return False
-#         return True
-
-
-# def _chk_port_value(value):
-#     try:
-#         port = int(value)
-#     except ValueError:
-#         print('Port supposed to be integer value, not {}. Now we are using 7777'.format(port))
-#         return False
-#     else:
-#         if port > 65534 or port < 1024:
-#             print('Port supposed to be between 1024 and 65535, not {}. Now we are using 7777'.format(port))
-#             return False
-#         else:
-#             return True
-#
-
 class Client:
     def __init__(self, addr, port):
         self.addr = addr
@@ -63,27 +30,27 @@ class Client:
                     'time': time.time(),
                     'login': 'max'
                     }
-        for key, value in kwargs: #to put actual login or any additional information we'll use the kwargs
+        for key, value in kwargs.items(): #to put actual login or any additional information we'll use the kwargs
             presence[key] = value
         return presence
 
-    def dict_to_bytes(self, message):
+    def _dict_to_bytes(self, message):
         j_message = json.dumps(message)
         b_message = j_message.encode()
         return b_message
 
-    def bytes_to_dict(self, b_message):
+    def _bytes_to_dict(self, b_message):
         j_message = b_message.decode()
         message = json.loads(j_message)
         return message
 
     def send_message(self, message):
-        b_message = self.dict_to_bytes(message)
+        b_message = self._dict_to_bytes(message)
         self.sock.send(b_message)
 
     def get_message(self):
         b_message = self.sock.recv(1024)
-        message = self.bytes_to_dict(b_message)
+        message = self._bytes_to_dict(b_message)
         return message
 
 if __name__ == '__main__':
