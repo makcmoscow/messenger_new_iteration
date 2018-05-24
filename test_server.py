@@ -58,7 +58,7 @@ class TestServer:
         assert type(x.server_socket) is socket.socket
         del x
 
-    def test_dict_to_bytes_and_bytes_to_dict(self):
+    def test_dict_to_bytes_and_bytes_to_dict(self):#todo it's nesessary to change this test and start test send/recieve instead of encode/decode
         x = server.Server('127.0.0.1', 7777)
         messages = [
             {'response': '200', 'time': 'time'},
@@ -66,8 +66,8 @@ class TestServer:
             {'response': '400', 'time': 'time', 'another_key': 123}
         ]
         for message in messages:
-            b = x._dict_to_bytes(message)
-            d = x._bytes_to_dict(b)
+            b = server._dict_to_bytes(message)
+            d = server._bytes_to_dict(b)
             assert d == message
         del x
 

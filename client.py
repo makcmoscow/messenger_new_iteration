@@ -2,7 +2,7 @@ from socket import *
 import time
 import json
 import argparse
-from common import _chk_ip_value, _chk_port_value
+from common import _chk_ip_value, _chk_port_value, _dict_to_bytes, _bytes_to_dict
 
 def parser(): #It returns IP address and port if they are was given
     parser = argparse.ArgumentParser()
@@ -34,23 +34,14 @@ class Client:
             presence[key] = value
         return presence
 
-    def _dict_to_bytes(self, message):
-        j_message = json.dumps(message)
-        b_message = j_message.encode()
-        return b_message
-
-    def _bytes_to_dict(self, b_message):
-        j_message = b_message.decode()
-        message = json.loads(j_message)
-        return message
 
     def send_message(self, message):
-        b_message = self._dict_to_bytes(message)
+        b_message = _dict_to_bytes(message)
         self.sock.send(b_message)
 
     def get_message(self):
         b_message = self.sock.recv(1024)
-        message = self._bytes_to_dict(b_message)
+        message = _bytes_to_dict(b_message)
         return message
 
 if __name__ == '__main__':

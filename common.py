@@ -1,3 +1,5 @@
+import json
+
 def _chk_ip_value(value):
     err_text = 'IP address supposed to be 4 integer number separated by ".", not {}'
     test_value = value.split('.')
@@ -35,3 +37,12 @@ def _chk_port_value(value):
         else:
             return True
 
+def _dict_to_bytes(message):
+    j_message = json.dumps(message)
+    b_message = j_message.encode()
+    return b_message
+
+def _bytes_to_dict(b_message):
+    j_message = b_message.decode()
+    message = json.loads(j_message)
+    return message

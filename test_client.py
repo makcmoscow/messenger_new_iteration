@@ -23,7 +23,7 @@ class TestClient:
             {'response': '400', 'time': 'time', 'another_key': 123}
         ]
         for message in messages:
-            b = x._dict_to_bytes(message)
-            d = x._bytes_to_dict(b)
+            b = client._dict_to_bytes(message)
+            d = client._bytes_to_dict(b)
             assert d == message
         del x
