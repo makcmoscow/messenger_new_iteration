@@ -45,7 +45,8 @@ class Client:
 
     def mainloop_w(self):
         while True:
-            message = input('Введите ваше сообщение: \n')
+            message = JIMmessage(self, text = input('Введите ваше сообщение: \n')).msg()
+
             self.send_message(message)
 
 def handshake(client):
@@ -174,8 +175,8 @@ def start():
     addr, port = parser()
     client = Client(addr, port)
     client.connect()
-    mode = input('Введите режим работы: {} или {}: '.format('r', 'w'))
-    # mode = 'r'
+    # mode = input('Введите режим работы: {} или {}: '.format('r', 'w'))
+    mode = 'w'
     client.user_name = input('Введите Ваше имя: ')
     if handshake(client):
         if mode == 'r':

@@ -3,7 +3,16 @@ import sys
 import argparse
 import json
 import time
+import select
 from common import _chk_ip_value, _chk_port_value
+from logger import logger
+from queue import Queue
+
+class JIMmessage:
+    def __init__(self):
+        pass
+
+
 
 
 def parser(): #It returns IP address and port if they are was given
@@ -28,22 +37,36 @@ class Server:
         self.addr = addr #IP used to client's connect, default = any available
         self.port = port#port used to client's connect, default = 7777
         self.server_socket = self.prepare_connection()#socket for client connections
+        self.all_clients = {}
 
-    def prepare_connection(self, timeout = 10):# Let's prepare server socket for job
+    def prepare_connection(self, timeout = 0.2):# Let's prepare server socket for job
         server_socket = socket()
         server_socket.bind((self.addr, self.port))
         server_socket.listen()
         server_socket.settimeout(timeout)
         return server_socket
+    @logger
+    def send_message(self, message, socket):# This function need dict message and client socket
+        try:
+            b_message = self._dict_to_bytes(message)
+            socket.send(b_message)
+        except OSError:
+            print('Клиент отключился')
+            socket.close()
+            self.all_clients_socks.remove(socket)
+            self.all_clients.pop(socket)
 
-    def send_message(self, message, sock):# This function need dict message and client socket
-        b_message = self._dict_to_bytes(message)
-        sock.send(b_message)
 
-    def get_message(self, sock):# This function need client socket and returns dict message
-        b_message = sock.recv(1024)
-        message = self._bytes_to_dict(b_message)
-        return message
+    @logger
+    def get_message(self, socket):# This function need client socket and returns dict message
+        try:
+            b_message = socket.recv(1024)
+            message = self._bytes_to_dict(b_message)
+            return message
+        except OSError:
+            self.all_clients_socks.remove(socket)
+            self.all_clients.pop(socket)
+
 
 
     def chk_fields(self, message):
@@ -69,27 +92,60 @@ class Server:
         message = json.loads(j_message)
         return message
 
+    def presence_handler(self, new_client):
+        request = self.get_message(new_client.socket)
+        if self.chk_fields(request):
+            response = self.create_response('200', time=time.time())
+        else:
+            response = self.create_response('400', time=time.time())
+        self.send_message(response, new_client.socket)
+
 
     def mainloop(self):
+        self.all_clients_socks = []
+        self.readers = []
+        self.writers = []
+
         while True:
             try:
                 client_sock, address = self.server_socket.accept()
                 client = Client(client_sock)
+                self.presence_handler(client)
             except OSError:
                 pass
             else:
-                try:
-                    incoming_message = self.get_message(client.socket)
-                    if self.chk_fields(incoming_message):
-                        response = self.create_response('200', time = time.time())
-                    else:
-                        response = self.create_response('400', time = time.time())
-                    self.send_message(response, client.socket)
-                    sys.exit(0)
-                except OSError:
-                    pass
+                self.all_clients_socks.append(client.socket)
+                self.all_clients[client_sock] = client
             finally:
-                self.mainloop()
+                try:
+                    self.writers, self.readers, self.errors = select.select(self.all_clients_socks, self.all_clients_socks, [])
+                except Exception as e:
+                    pass
+
+                requests = []
+                responces = []
+                for writer in self.writers:
+                    request = self.get_message(writer)
+                    print(request)
+                    requests.append(request)
+                for reader in self.readers:
+                    for request in requests:
+                        print(request)
+                        self.send_message(request, reader)
+
+
+
+                # try:
+                #     incoming_message = self.get_messages()
+                #     if self.chk_fields(incoming_message):
+                #         response = self.create_response('200', time = time.time())
+                #     else:
+                #         response = self.create_response('400', time = time.time())
+                #     self.send_messages(response)
+                #     sys.exit(0)
+                # except OSError:
+                #     pass
+
 
 if __name__ == '__main__':
     addr, port = parser()

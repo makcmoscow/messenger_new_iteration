@@ -174,8 +174,8 @@ def start():
     addr, port = parser()
     client = Client(addr, port)
     client.connect()
-    mode = input('Введите режим работы: {} или {}: '.format('r', 'w'))
-    # mode = 'r'
+    # mode = input('Введите режим работы: {} или {}: '.format('r', 'w'))
+    mode = 'r'
     client.user_name = input('Введите Ваше имя: ')
     if handshake(client):
         if mode == 'r':
