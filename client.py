@@ -68,7 +68,7 @@ def chk_response(s_response):
 class JIMmessage():
     def __init__(self, client, msg_type=None, text=None, to=None):
 
-        self.time = str(time.ctime())
+        self.time = str(time.time())
         self.type = str(msg_type)
         self.text = str(text)
         self.to = str(to)

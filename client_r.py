@@ -5,15 +5,17 @@ import argparse
 from common import _chk_ip_value, _chk_port_value, _dict_to_bytes, _bytes_to_dict
 
 
-def parser(): #It returns IP address and port if they are was given
+def parsing():   # It returns IP address and port if they are was given
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--addr', help='use this option to choose IP for listening')
     parser.add_argument('-p', '--port', help='use this option to choose server port')
     args = parser.parse_args()
     addr = '127.0.0.1'
     port = 7777
-    if args.port and _chk_port_value(args.port): port = int(args.port)
-    if args.addr and _chk_ip_value(args.addr): addr = args.addr
+    if args.port and _chk_port_value(args.port):
+        port = int(args.port)
+    if args.addr and _chk_ip_value(args.addr):
+        addr = args.addr
     return addr, port
 
 
@@ -41,38 +43,38 @@ class Client:
     def mainloop_r(self):
         while True:
             message = self.get_message()
-            print(message)
+            print('От {} пришло: {}'.format(message['from'], message['message']))
 
     def mainloop_w(self):
         while True:
-            message = input('Введите ваше сообщение: \n')
+            message = JIMmessage(self, text = input('Введите ваше сообщение: \n')).msg()
+
             self.send_message(message)
 
 def handshake(client):
-    presence = JIMmessage(client).presence()
+    presence = JIMmessage(client).actions['presence']()
     client.send_message(presence)
     s_response = client.get_message()
     return chk_response(s_response)
 
 def chk_response(s_response):
     if s_response['response'] == '200':
-        print('Everything well')
+        print('Everything well', s_response)
         return True
     else:
         print('there are error number {}'.format(s_response['response']))
         return False
 
 
-
-
 class JIMmessage():
     def __init__(self, client, msg_type=None, text=None, to=None):
 
-        self.time = str(time.ctime())
+        self.time = str(time.time())
         self.type = str(msg_type)
         self.text = str(text)
         self.to = str(to)
         self.client = client
+        self.actions = {'presence': self.presence, 'auth': self.auth, 'msg': self.msg, 'quit': self.quit}
 
     def presence(self):
         presence = {
@@ -108,70 +110,15 @@ class JIMmessage():
         }
         return msg
 
-    # def join(self):
-    #     join_chat = {
-    #         'action': 'join',
-    #         'time': time.time(),
-    #         'room': '#room_name'
-    #     }
-    #     return join_chat
-
-    # def leave(self):
-    #     leave_chat = {
-    #         'action': 'leave',
-    #         'time': time.time(),
-    #         'room': '#room_name'
-    #     }
-    #     return leave_chat
-
     def quit(self):
         quit = {
             'action': 'quit'
         }
         return quit
 
-    def probe(self):
-        probe = {
-            'action': 'probe',
-            'time': self.time
-        }
-        return probe
-
-    # def alert(self, number, text):
-    #     alert = {
-    #         'response': number,
-    #         'time': self.time,
-    #         'alert': text
-    #     }
-    #     return alert
-
-    # def error(self, number, text):
-    #     error = {
-    #         'response': number,
-    #         'time': time.time(),
-    #         'error': text
-    #     }
-    #     return error
-
-    code = {
-        '100': 'based notification',
-        '101': 'important notice',
-        '200': 'OK',
-        '201': 'created',
-        '202': 'accepted',
-
-        '400': 'incorrect json object',
-        '401': 'not authorized',
-        '402': 'incorrect login or password',
-        '403': 'user forbidden',
-        '404': 'user or chat not found in server',
-        '409': 'conflict! login is already in use',
-        '410': 'user offline',
-        '500': 'server error'
-    }
 
 def start():
-    addr, port = parser()
+    addr, port = parsing()
     client = Client(addr, port)
     client.connect()
     # mode = input('Введите режим работы: {} или {}: '.format('r', 'w'))
@@ -184,7 +131,6 @@ def start():
             client.mainloop_w()
     else:
         print('Something happened')
-
 
 
 if __name__ == '__main__':
