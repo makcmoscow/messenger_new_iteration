@@ -3,10 +3,12 @@ import argparse
 import json
 import time
 import select
+import Table_handler
 from common import _chk_ip_value, _chk_port_value
 from logger import logger
 from json.decoder import JSONDecodeError
-from queue import Queue
+from multiprocessing import Queue
+q_messages = Queue()
 
 class JIMresponse:
     def __init__(self, code):
@@ -66,7 +68,24 @@ def parser():  # It returns IP address and port if they are was given
 class Client():
     def __init__(self, socket):
         self.socket = socket
+        self.last_send_time = None
+        self.nickname = None
+        self.password = None
 
+
+    def is_registered(self):
+        is_user = Table_handler.User().get_user(nickname=self.nickname)
+        if not is_user:
+            print('Похоже, что к нам подключился совершенно новый пользователь, нужно его занести в базу')
+            return False
+            #Запросили, и теперь мы можем добавить его в базу
+        if is_user:
+            return True
+
+    def registration(self):
+        new_user = Table_handler.User(nickname=self.nickname, password=self.password)
+        new_user.add_user()
+        print('Мы успешно зарегистрировали клиента! никнейм: {}, пароль: {}'.format(self.nickname, self.password))
 
 class Server:
     def __init__(self, addr, port):
@@ -106,6 +125,8 @@ class Server:
         except ConnectionResetError:
             self.all_clients_socks.remove(socket) if socket in self.all_clients_socks else None
             self.all_clients.pop(socket) if socket in self.all_clients else None
+            self.writers.remove(socket) if socket in self.writers else None
+            self.readers.remove(socket) if socket in self.readers else None
             print('Клиент отключился и был удален')
         except OSError:
             pass
@@ -117,12 +138,7 @@ class Server:
             return '200'
         else:
             return '400'
-    @logger
-    def create_response(self, *args, **kwargs):
-        response = {'response': args[0], 'time': 'time'}  # first argument supposed to be code server's response
-        for key, value in kwargs.items():  # if we need to create special responce, we just give kwargs dictionary.
-            response[key] = value
-        return response
+
     @logger
     def _dict_to_bytes(self, message):
         j_message = json.dumps(message)
@@ -137,13 +153,39 @@ class Server:
             message = {}
         return message
     @logger
-    def message_handler(self, socket):
+    def handshake(self, socket): # handshake
         request = self.get_message(socket)
         if request:
             code = self.chk_fields(request)
             response = JIMresponse(code).response()
             self.send_message(response, socket)
-            # return request
+            user_nickname = request['user']['login_name']
+
+            return user_nickname, True
+        else:
+            return None, False
+
+
+
+
+
+    def authenticate(self, client):
+        request = self.get_message(client.socket)
+        if request:
+            client.password = request['user']['password']
+            if client.is_registered():
+                pass
+
+            else:
+                client.registration()
+
+
+            code = self.chk_fields(request)
+            response = JIMresponse(code).response()
+            self.send_message(response, client.socket)
+
+
+
 
     def mainloop(self):
 
@@ -152,10 +194,17 @@ class Server:
             try:
                 client_sock, address = self.server_socket.accept()
                 client = Client(client_sock)
-                self.message_handler(client.socket)
+                client.nickname, is_good = self.handshake(client.socket)
+                if is_good:
+                    self.authenticate(client)
+
+
+
+
             except OSError:
                 pass
             else:
+
                 self.all_clients_socks.append(client.socket)
                 self.all_clients[client_sock] = client
                 print(self.all_clients)
@@ -165,15 +214,16 @@ class Server:
                 except Exception as e:
                     pass
 
-                requests = []
+                # requests = []
                 for writer in self.writers:
-                    # request = self.message_handler(writer)
                     request = self.get_message(writer)
                     if request and request['action'] == 'msg':
-                        requests.append(request)
-                    # self.message_handler(writer)
-                for reader in self.readers:
-                    for request in requests:
+                        q_messages.put(request)
+                if q_messages.empty():
+                    pass
+                else:
+                    request = q_messages.get()
+                    for reader in self.readers:
                         self.send_message(request, reader)
 
 

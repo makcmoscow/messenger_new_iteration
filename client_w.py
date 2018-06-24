@@ -2,6 +2,7 @@ from socket import *
 import time
 import json
 import argparse
+import Table_handler
 from common import _chk_ip_value, _chk_port_value, _dict_to_bytes, _bytes_to_dict
 
 
@@ -20,13 +21,13 @@ def parsing():   # It returns IP address and port if they are was given
 
 
 class Client:
-    def __init__(self, addr, port, account_name=None, password=None, user_name='guest'):
+    def __init__(self, addr, port, login_name=None, password=None, nickname='guest'):
         self.addr = addr
         self.port = port
         self.sock = socket()
-        self.account_name = str(account_name)
+        self.login_name = str(login_name)
         self.password = str(password)
-        self.user_name = str(user_name)
+        self.nickname = str(nickname)
 
     def connect(self):
         self.sock.connect((self.addr, self.port))
@@ -50,15 +51,31 @@ class Client:
         while True:
             message = JIMmessage(self, text = input('Введите ваше сообщение: \n')).msg()
             self.send_message(message)
-            # time.sleep(1)
-            # responce = self.get_message()
-            # print(responce)
 
-def handshake(client):
-    presence = JIMmessage(client).actions['presence']()
-    client.send_message(presence)
-    s_response = client.get_message()
-    return chk_response(s_response)
+
+    def handshake(self):
+        presence = JIMmessage(self).actions['presence']()
+        self.send_message(presence)
+        s_response = self.get_message()
+        return chk_response(s_response)
+
+    # def is_registered(self):
+    #     is_user = Table_handler.User().get_user(nickname=self.nickname)
+    #     if not is_user:
+    #         print('Похоже, вы к нам - в первый раз. Введите Ваш пароль, и мы зарегистрируем Вас: ')
+    #         self.password = input()
+    #         new_user = Table_handler.User(nickname = self.nickname, password = self.password)
+    #         new_user.add_user()
+    #         print('Вы успешно зарегистрировались! Ваш никнейм: {}, Ваш пароль: {}', self.nickname, self.password)
+    #
+    #     if is_user:
+    #         pass
+    #
+    def authenticate(self):
+        auth = JIMmessage(self).actions['auth']()
+        self.send_message(auth)
+        s_response = self.get_message()
+        return chk_response(s_response)
 
 def chk_response(s_response):
     if s_response['response'] == '200':
@@ -85,7 +102,8 @@ class JIMmessage():
             'time': self.time,
             'type': self.type,
             'user': {
-                'account_name': self.client.account_name,
+                # 'login_name': self.client.login_name,
+                'login_name': self.client.nickname, # временно не используем логин, отработка взаимодействия с базой
                 'status': 'OK'
             }
         }
@@ -96,7 +114,8 @@ class JIMmessage():
             'action': 'authenticate',
             'time': self.time,
             'user': {
-                'account_name': self.client.account_name,
+                # 'login_name': self.client.login_name,
+                'login_name': self.client.nickname, #Пока что логин и никнейм будут совпадать
                 'password': self.client.password
             }
         }
@@ -107,11 +126,22 @@ class JIMmessage():
             'action': 'msg',
             'time': self.time,
             'to': self.to,
-            'from': self.client.user_name,
+            'from': self.client.nickname,
             'encoding': 'utf-8',
             'message': self.text
         }
         return msg
+
+    # def reg(self):
+    #     msg = {
+    #         'action': 'reg',
+    #         'time': self.time,
+    #         'nickname': self.client.user_name,
+    #         'account_name': self.client.account_name,
+    #         'encoding': 'utf-8',
+    #         'password': self.client.password
+    #     }
+    #     return msg
 
     def quit(self):
         quit = {
@@ -126,14 +156,16 @@ def start():
     client.connect()
     # mode = input('Введите режим работы: {} или {}: '.format('r', 'w'))
     mode = 'w'
-    client.user_name = input('Введите Ваше имя: ')
-    if handshake(client):
-        if mode == 'r':
-            client.mainloop_r()
+    client.nickname = input('Введите Ваше имя: ')
+    client.password = input('Введите Ваш пароль: ')
+    if client.handshake():
+        if client.authenticate():
+            if mode == 'r':
+                client.mainloop_r()
+            else:
+                client.mainloop_w()
         else:
-            client.mainloop_w()
-    else:
-        print('Something happened')
+            print('Something happened')
 
 
 if __name__ == '__main__':
