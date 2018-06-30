@@ -8,6 +8,45 @@ Base = declarative_base()
 engine = create_engine('sqlite:///test2_db.sqlite', echo=False)
 Session = sessionmaker(bind=engine)
 
+class History(Base):
+    __tablename__ = 'history_table'
+    id = Column(Integer, primary_key=True)
+    nickname = Column(String, nullable=False, unique=True)
+    # login_name = Column(String, nullable=False, unique=True)
+    last_enter_time = Column(String, nullable=True)
+    last_exit_time = Column(String, nullable=True)
+    last_ip_address = Column(String, nullable=False)
+
+
+    def __repr__(self):
+        return "USER({} entered at {} from IP={} and exit {})".format(self.nickname, self.last_enter_time, self.last_ip_address, self.last_exit_time)
+
+    def create_database(self):
+        Base.metadata.create_all(engine)
+
+    def add_user_history(self):
+        session = Session()
+        session.add(self)
+        try:
+            session.commit()
+        except NotUniq:
+            print('this user already in database')
+        finally:
+            session.close()
+
+
+    def get_user_hystory(self, nickname = None):
+        session = Session()
+        x = session.query(History).filter(History.nickname == nickname).first()
+        session.close()
+        return x
+
+    def del_user_history(self, nickname = None):
+        session = Session()
+        x = session.query(History).filter(History.nickname == nickname).first()
+        session.delete(x)
+        session.commit()
+        session.close()
 
 
 class User(Base):
