@@ -8,6 +8,7 @@ from common import _chk_ip_value, _chk_port_value
 from logger import logger
 from json.decoder import JSONDecodeError
 from multiprocessing import Queue
+import datetime
 q_messages = Queue()
 
 class JIMresponse:
@@ -71,10 +72,12 @@ class Client():
         self.last_send_time = None
         self.nickname = None
         self.password = None
+        self.login_name = None
+
 
 
     def is_registered(self):
-        is_user = Table_handler.User().get_user(nickname=self.nickname)
+        is_user = Table_handler.User().get_user(login_name=self.login_name)
         if not is_user:
             print('Похоже, что к нам подключился совершенно новый пользователь, нужно его занести в базу')
             return False
@@ -83,7 +86,7 @@ class Client():
             return True
 
     def registration(self):
-        new_user = Table_handler.User(nickname=self.nickname, password=self.password)
+        new_user = Table_handler.User(login_name = self.login_name, nickname=self.nickname, password=self.password)
         new_user.add_user()
         print('Мы успешно зарегистрировали клиента! никнейм: {}, пароль: {}'.format(self.nickname, self.password))
 
@@ -103,6 +106,20 @@ class Server:
         server_socket.listen()
         server_socket.settimeout(timeout)
         return server_socket
+
+    def set_last_exit_time(self, socket):
+        instance = Table_handler.History()
+        user_login = self.all_clients[socket].login_name
+        user_history = Table_handler.History().get_user_hystory(
+            login_name=user_login)
+        last_enter_time = user_history.last_enter_time
+        last_ip_address = user_history.last_ip_address
+        instance.del_user_history(user_login)
+        Table_handler.History(login_name=user_login,
+                              last_ip_address=last_ip_address,
+                              last_exit_time=time.time(),
+                              last_enter_time=last_enter_time).add_user_history()
+
     @logger
     def send_message(self, message, socket):  # This function need dict message and client socket
         try:
@@ -110,6 +127,7 @@ class Server:
             socket.send(b_message)
         except ConnectionResetError:
             print('Клиент отключился')
+            self.set_last_exit_time(socket)
             socket.close()
             self.all_clients_socks.remove(socket) if socket in self.all_clients_socks else None
             self.all_clients.pop(socket) if socket in self.all_clients else None
@@ -123,6 +141,7 @@ class Server:
             message = self._bytes_to_dict(b_message)
             return message
         except ConnectionResetError:
+            self.set_last_exit_time(socket)
             self.all_clients_socks.remove(socket) if socket in self.all_clients_socks else None
             self.all_clients.pop(socket) if socket in self.all_clients else None
             self.writers.remove(socket) if socket in self.writers else None
@@ -159,9 +178,9 @@ class Server:
             code = self.chk_fields(request)
             response = JIMresponse(code).response()
             self.send_message(response, socket)
-            user_nickname = request['user']['login_name']
+            user_login_name = request['user']['login_name']
 
-            return user_nickname, True
+            return user_login_name, True
         else:
             return None, False
 
@@ -174,9 +193,9 @@ class Server:
         if request:
             client.password = request['user']['password']
             if client.is_registered():
-                pass
-
+                print('К нам подключился зарегистрированный пользователь')
             else:
+                print('К нам подключился незарегистрированный пользователь')
                 client.registration()
 
 
@@ -199,10 +218,21 @@ class Server:
             try:
                 client_sock, address = self.server_socket.accept()
                 client = Client(client_sock)
-                client.nickname, is_good = self.handshake(client.socket)
+                client.login_name, is_good = self.handshake(client.socket)
                 if is_good:
                     self.authenticate(client)
-
+                    user = Table_handler.User().get_user(
+                        login_name=client.login_name)
+                    user_history = Table_handler.History().get_user_hystory(login_name=user.login_name)
+                    if user_history:
+                        last_enter_time = user_history.last_enter_time
+                        last_exit_time = user_history.last_exit_time
+                        last_ip_address = user_history.last_ip_address
+                        Table_handler.History(login_name=user.login_name, last_ip_address = last_ip_address, last_exit_time = last_exit_time, last_enter_time=last_enter_time).add_user_history()
+                    else:
+                        Table_handler.History(login_name=user.login_name,
+                                              last_ip_address=address[0],
+                                              last_enter_time=time.time()).add_user_history()
 
 
 

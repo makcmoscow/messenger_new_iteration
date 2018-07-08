@@ -39,7 +39,7 @@ class Client:
     def get_message(self):
         b_message = self.sock.recv(1024)
         message = _bytes_to_dict(b_message)
-        print('in get_message we got: ', message)
+        if 'message' in message: print('in get_message we got: ', message['message'])
         return message
 
     def mainloop_r(self):
@@ -102,8 +102,7 @@ class JIMmessage():
             'time': self.time,
             'type': self.type,
             'user': {
-                # 'login_name': self.client.login_name,
-                'login_name': self.client.nickname, # временно не используем логин, отработка взаимодействия с базой
+                'login_name': self.client.login_name,
                 'status': 'OK'
             }
         }
@@ -114,8 +113,7 @@ class JIMmessage():
             'action': 'authenticate',
             'time': self.time,
             'user': {
-                # 'login_name': self.client.login_name,
-                'login_name': self.client.nickname, #Пока что логин и никнейм будут совпадать
+                'login_name': self.client.login_name,
                 'password': self.client.password
             }
         }
