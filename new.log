@@ -97578,3 +97578,108 @@ function send_message return None
 function handshake return ('555', True)
 function _bytes_to_dict return {'action': 'authenticate', 'time': '1531078152.658998', 'user': {'login_name': '555', 'password': '666'}}
 function get_message return {'action': 'authenticate', 'time': '1531078152.658998', 'user': {'login_name': '555', 'password': '666'}}
+function parser return ('', 7777)
+function _bytes_to_dict return {'action': 'presence', 'time': '1531135617.5411153', 'type': 'None', 'user': {'login_name': '888', 'status': 'OK'}}
+function get_message return {'action': 'presence', 'time': '1531135617.5411153', 'type': 'None', 'user': {'login_name': '888', 'status': 'OK'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135617.5436313, "alert": "OK"}'
+function send_message return None
+function handshake return ('888', True)
+function _bytes_to_dict return {'action': 'authenticate', 'time': '1531135617.5451324', 'user': {'login_name': '888', 'password': '666'}}
+function get_message return {'action': 'authenticate', 'time': '1531135617.5451324', 'user': {'login_name': '888', 'password': '666'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135617.5786216, "alert": "OK"}'
+function send_message return None
+function parser return ('', 7777)
+function _bytes_to_dict return {'action': 'presence', 'time': '1531135694.0609531', 'type': 'None', 'user': {'login_name': '888', 'status': 'OK'}}
+function get_message return {'action': 'presence', 'time': '1531135694.0609531', 'type': 'None', 'user': {'login_name': '888', 'status': 'OK'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135694.0609531, "alert": "OK"}'
+function send_message return None
+function handshake return ('888', True)
+function _bytes_to_dict return {'action': 'authenticate', 'time': '1531135694.0609531', 'user': {'login_name': '888', 'password': '888'}}
+function get_message return {'action': 'authenticate', 'time': '1531135694.0609531', 'user': {'login_name': '888', 'password': '888'}}
+function parser return ('', 7777)
+function _bytes_to_dict return {'action': 'presence', 'time': '1531135825.291058', 'type': 'None', 'user': {'login_name': '888', 'status': 'OK'}}
+function get_message return {'action': 'presence', 'time': '1531135825.291058', 'type': 'None', 'user': {'login_name': '888', 'status': 'OK'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135825.3066823, "alert": "OK"}'
+function send_message return None
+function handshake return ('888', True)
+function _bytes_to_dict return {'action': 'authenticate', 'time': '1531135825.3066823', 'user': {'login_name': '888', 'password': '888'}}
+function get_message return {'action': 'authenticate', 'time': '1531135825.3066823', 'user': {'login_name': '888', 'password': '888'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135825.353559, "alert": "OK"}'
+function send_message return None
+function parser return ('', 7777)
+function parser return ('', 7777)
+function _bytes_to_dict return {'action': 'presence', 'time': '1531135874.443355', 'type': 'None', 'user': {'login_name': '888', 'status': 'OK'}}
+function get_message return {'action': 'presence', 'time': '1531135874.443355', 'type': 'None', 'user': {'login_name': '888', 'status': 'OK'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135874.443355, "alert": "OK"}'
+function send_message return None
+function handshake return ('888', True)
+function _bytes_to_dict return {'action': 'authenticate', 'time': '1531135874.443355', 'user': {'login_name': '888', 'password': '555'}}
+function get_message return {'action': 'authenticate', 'time': '1531135874.443355', 'user': {'login_name': '888', 'password': '555'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135874.443355, "alert": "OK"}'
+function send_message return None
+function get_message return None
+function _bytes_to_dict return {'action': 'presence', 'time': '1531135911.6979032', 'type': 'None', 'user': {'login_name': '987', 'status': 'OK'}}
+function get_message return {'action': 'presence', 'time': '1531135911.6979032', 'type': 'None', 'user': {'login_name': '987', 'status': 'OK'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135911.6979032, "alert": "OK"}'
+function send_message return None
+function handshake return ('987', True)
+function _bytes_to_dict return {'action': 'authenticate', 'time': '1531135911.6979032', 'user': {'login_name': '987', 'password': '777'}}
+function get_message return {'action': 'authenticate', 'time': '1531135911.6979032', 'user': {'login_name': '987', 'password': '777'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135911.7195385, "alert": "OK"}'
+function send_message return None
+function get_message return None
+function _bytes_to_dict return {'action': 'presence', 'time': '1531135920.3355594', 'type': 'None', 'user': {'login_name': '123', 'status': 'OK'}}
+function get_message return {'action': 'presence', 'time': '1531135920.3355594', 'type': 'None', 'user': {'login_name': '123', 'status': 'OK'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135920.3355594, "alert": "OK"}'
+function send_message return None
+function handshake return ('123', True)
+function _bytes_to_dict return {'action': 'authenticate', 'time': '1531135920.3355594', 'user': {'login_name': '123', 'password': '123'}}
+function get_message return {'action': 'authenticate', 'time': '1531135920.3355594', 'user': {'login_name': '123', 'password': '123'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531135920.3511872, "alert": "OK"}'
+function send_message return None
+function parser return ('', 7777)
+function parser return ('', 7777)
+function parser return ('', 7777)
+function parser return ('', 7777)
+function _bytes_to_dict return {'action': 'presence', 'time': '1531404482.1347', 'type': 'None', 'user': {'login_name': 'None', 'status': 'OK'}}
+function get_message return {'action': 'presence', 'time': '1531404482.1347', 'type': 'None', 'user': {'login_name': 'None', 'status': 'OK'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531404482.1366966, "alert": "OK"}'
+function send_message return None
+function handshake return ('None', True)
+function _bytes_to_dict return {'action': 'authenticate', 'time': '1531404482.1566968', 'user': {'login_name': 'None', 'password': '123'}}
+function get_message return {'action': 'authenticate', 'time': '1531404482.1566968', 'user': {'login_name': 'None', 'password': '123'}}
+function chk_fields return 200
+function _dict_to_bytes return b'{"response": "200", "time": 1531404482.2067013, "alert": "OK"}'
+function send_message return None
+function _bytes_to_dict return {'action': 'msg', 'time': '1531404485.5249536', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '123'}
+function get_message return {'action': 'msg', 'time': '1531404485.5249536', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '123'}
+function _dict_to_bytes return b'{"action": "msg", "time": "1531404485.5249536", "to": "None", "from": "123", "encoding": "utf-8", "message": "123"}'
+function send_message return None
+function _bytes_to_dict return {'action': 'msg', 'time': '1531404487.8541288', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '321'}
+function get_message return {'action': 'msg', 'time': '1531404487.8541288', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '321'}
+function _dict_to_bytes return b'{"action": "msg", "time": "1531404487.8541288", "to": "None", "from": "123", "encoding": "utf-8", "message": "321"}'
+function send_message return None
+function _bytes_to_dict return {'action': 'msg', 'time': '1531404489.1652288', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '213'}
+function get_message return {'action': 'msg', 'time': '1531404489.1652288', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '213'}
+function _dict_to_bytes return b'{"action": "msg", "time": "1531404489.1652288", "to": "None", "from": "123", "encoding": "utf-8", "message": "213"}'
+function send_message return None
+function _bytes_to_dict return {'action': 'msg', 'time': '1531404490.3953228', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '321'}
+function get_message return {'action': 'msg', 'time': '1531404490.3953228', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '321'}
+function _dict_to_bytes return b'{"action": "msg", "time": "1531404490.3953228", "to": "None", "from": "123", "encoding": "utf-8", "message": "321"}'
+function send_message return None
+function _bytes_to_dict return {'action': 'msg', 'time': '1531404491.9434388', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '22222'}
+function get_message return {'action': 'msg', 'time': '1531404491.9434388', 'to': 'None', 'from': '123', 'encoding': 'utf-8', 'message': '22222'}
+function _dict_to_bytes return b'{"action": "msg", "time": "1531404491.9434388", "to": "None", "from": "123", "encoding": "utf-8", "message": "22222"}'
+function send_message return None

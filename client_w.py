@@ -4,6 +4,9 @@ import json
 import argparse
 import Table_handler
 from common import _chk_ip_value, _chk_port_value, _dict_to_bytes, _bytes_to_dict
+from threading import  Thread
+
+
 
 
 def parsing():   # It returns IP address and port if they are was given
@@ -156,12 +159,12 @@ def start():
     mode = 'w'
     client.nickname = input('Введите Ваше имя: ')
     client.password = input('Введите Ваш пароль: ')
+    read_loop = Thread(target=client.mainloop_r)
+    write_loop = Thread(target=client.mainloop_w)
     if client.handshake():
         if client.authenticate():
-            if mode == 'r':
-                client.mainloop_r()
-            else:
-                client.mainloop_w()
+            read_loop.start()
+            write_loop.start()
         else:
             print('Something happened')
 

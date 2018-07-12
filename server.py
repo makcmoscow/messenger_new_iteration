@@ -86,6 +86,7 @@ class Client():
             return True
 
     def registration(self):
+        if not self.nickname: self.nickname = self.login_name
         new_user = Table_handler.User(login_name = self.login_name, nickname=self.nickname, password=self.password)
         new_user.add_user()
         print('Мы успешно зарегистрировали клиента! никнейм: {}, пароль: {}'.format(self.nickname, self.password))

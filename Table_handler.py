@@ -88,19 +88,9 @@ class User(Base):
 
     def get_user(self, nick_name = None, login_name = None):
         session = Session()
-        x = None
-        try:
-            x = session.query(User).filter(User.nickname == nick_name).first()
-            session.close()
-        except Exception as e:
-            print(e)
-        if x:
-            return x
-        else:
-            x = session.query(User).filter(User.login_name == login_name).first()
-            session.close()
-            if x:
-                return x
+        x = session.query(User).filter(User.login_name == login_name).first()
+        session.close()
+        return x
 
     def del_user(self, login_name):
         session = Session()
