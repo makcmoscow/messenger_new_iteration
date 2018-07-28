@@ -9,6 +9,8 @@ from logger import logger
 from json.decoder import JSONDecodeError
 from multiprocessing import Queue
 import datetime
+import asyncio
+
 q_messages = Queue()
 
 class JIMresponse:
@@ -53,7 +55,7 @@ class JIMmessage:
         }
         return probe
 
-@logger
+
 def parser():  # It returns IP address and port if they are was given
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--addr', help='use this option to choose IP for listening')
@@ -73,7 +75,7 @@ class Client():
         self.nickname = None
         self.password = None
         self.login_name = None
-
+        self.address = None
 
 
     def is_registered(self):
@@ -121,7 +123,7 @@ class Server:
                               last_exit_time=time.time(),
                               last_enter_time=last_enter_time).add_user_history()
 
-    @logger
+
     def send_message(self, message, socket):  # This function need dict message and client socket
         try:
             b_message = self._dict_to_bytes(message)
@@ -135,7 +137,7 @@ class Server:
         except OSError:
             pass
 
-    @logger
+
     def get_message(self, socket):  # This function need client socket and returns dict message
         try:
             b_message = socket.recv(1024)
@@ -152,19 +154,19 @@ class Server:
             pass
 
 
-    @logger
+
     def chk_fields(self, message):
         if 'action' in message and 'time' in message and (len(message['action']) < 15):
             return '200'
         else:
             return '400'
 
-    @logger
+
     def _dict_to_bytes(self, message):
         j_message = json.dumps(message)
         b_message = j_message.encode()
         return b_message
-    @logger
+
     def _bytes_to_dict(self, b_message):
         try:
             j_message = b_message.decode()
@@ -172,7 +174,7 @@ class Server:
         except JSONDecodeError:
             message = {}
         return message
-    @logger
+
     def handshake(self, socket): # handshake
         request = self.get_message(socket)
         if request:
@@ -195,16 +197,17 @@ class Server:
             client.password = request['user']['password']
             if client.is_registered():
                 print('К нам подключился зарегистрированный пользователь')
+                code = self.chk_fields(request)
+                response = JIMresponse(code).response()
+                self.send_message(response, client.socket)
+                return True
             else:
                 print('К нам подключился незарегистрированный пользователь')
-                client.registration()
-
-
-            code = self.chk_fields(request)
-            response = JIMresponse(code).response()
-            self.send_message(response, client.socket)
-
-
+                # client.registration()
+                message = JIMresponse('404')
+                message = message.response()
+                self.send_message(message, client.socket)
+                return False
 
 
 
@@ -213,59 +216,92 @@ class Server:
 
 
 
+    def accepting(self):
+        client_sock, address = self.server_socket.accept()
+        client = Client(client_sock)
+        client.address = address
+        return client
 
-    def mainloop(self):
+    def update_user_history(self, client):
+        user = Table_handler.User().get_user(
+            login_name=client.login_name)
+        user_history = Table_handler.History().get_user_hystory(
+            login_name=user.login_name)
+        if user_history:
+            last_enter_time = user_history.last_enter_time
+            last_exit_time = user_history.last_exit_time
+            last_ip_address = user_history.last_ip_address
+            Table_handler.History(login_name=user.login_name,
+                                  last_ip_address=last_ip_address,
+                                  last_exit_time=last_exit_time,
+                                  last_enter_time=last_enter_time).add_user_history()
+        else:
+            Table_handler.History(login_name=user.login_name,
+                                  last_ip_address=client.address[0],
+                                  last_enter_time=time.time()).add_user_history()
+
+
+    async def writers_loop(self):
+        while True:
+            for writer in self.writers:
+                request = self.get_message(writer)
+                if request and request['action'] == 'msg':
+                    q_messages.put(request)
+            await asyncio.sleep(0)
+    async  def readers_loop(self):
+        while True:
+            if q_messages.empty():
+                pass
+            else:
+                request = q_messages.get()
+                for reader in self.readers:
+                    print('request', request)
+                    if request['to'] == self.all_clients[reader].login_name:
+                        self.send_message(request, reader)
+
+            await asyncio.sleep(0)
+
+    async def mainloop(self):
         while True:
             try:
-                client_sock, address = self.server_socket.accept()
-                client = Client(client_sock)
-                client.login_name, is_good = self.handshake(client.socket)
-                if is_good:
-                    self.authenticate(client)
-                    user = Table_handler.User().get_user(
-                        login_name=client.login_name)
-                    user_history = Table_handler.History().get_user_hystory(login_name=user.login_name)
-                    if user_history:
-                        last_enter_time = user_history.last_enter_time
-                        last_exit_time = user_history.last_exit_time
-                        last_ip_address = user_history.last_ip_address
-                        Table_handler.History(login_name=user.login_name, last_ip_address = last_ip_address, last_exit_time = last_exit_time, last_enter_time=last_enter_time).add_user_history()
-                    else:
-                        Table_handler.History(login_name=user.login_name,
-                                              last_ip_address=address[0],
-                                              last_enter_time=time.time()).add_user_history()
-
-
-
+                client = self.accepting()
             except OSError:
                 pass
             else:
-
-                self.all_clients_socks.append(client.socket)
-                self.all_clients[client_sock] = client
-                print(self.all_clients)
+                client.login_name, handshake_well = self.handshake(client.socket)
+                if handshake_well:
+                    if self.authenticate(client):
+                        self.update_user_history(client)
+                        self.all_clients_socks.append(client.socket)
+                        self.all_clients[client.socket] = client
+                        print(self.all_clients)
+                    else:
+                        print('незарегистрированный клиент ушел на хуй')
+                else:
+                    print('handshake wrong')
             finally:
                 try:
                     self.writers, self.readers, self.errors = select.select(self.all_clients_socks, self.all_clients_socks, [])
                 except Exception as e:
                     pass
+            await asyncio.sleep(0)
 
                 # requests = []
-                for writer in self.writers:
-                    request = self.get_message(writer)
-                    if request and request['action'] == 'msg':
-                        q_messages.put(request)
-                if q_messages.empty():
-                    pass
-                else:
-                    request = q_messages.get()
-                    for reader in self.readers:
-                        self.send_message(request, reader)
+
+
 
 
 if __name__ == '__main__':
     addr, port = parser()
     server = Server(addr, port)
+
+    ioloop = asyncio.get_event_loop()
+    tasks = [ioloop.create_task(server.mainloop()), ioloop.create_task(server.readers_loop()), ioloop.create_task(server.writers_loop())]
+    wait_tasks = asyncio.wait(tasks)
+    ioloop.run_until_complete(wait_tasks)
+    ioloop.close()
+
+
     server.mainloop()
 
 

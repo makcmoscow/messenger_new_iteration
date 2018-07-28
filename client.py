@@ -52,12 +52,13 @@ class Client:
 
     def mainloop_w(self):
         while True:
-            message = JIMmessage(self, text = input('Введите ваше сообщение: \n')).msg()
+            to = input('Кому? ')
+            message = JIMmessage(self, text = input('Введите ваше сообщение: \n'), to = to).msg
             self.send_message(message)
 
 
     def handshake(self):
-        presence = JIMmessage(self).actions['presence']()
+        presence = JIMmessage(self).actions['presence']
         self.send_message(presence)
         s_response = self.get_message()
         return chk_response(s_response)
@@ -75,7 +76,7 @@ class Client:
     #         pass
     #
     def authenticate(self):
-        auth = JIMmessage(self).actions['auth']()
+        auth = JIMmessage(self).actions['auth']
         self.send_message(auth)
         s_response = self.get_message()
         return chk_response(s_response)
@@ -99,6 +100,7 @@ class JIMmessage():
         self.client = client
         self.actions = {'presence': self.presence, 'auth': self.auth, 'msg': self.msg, 'quit': self.quit}
 
+    @property
     def presence(self):
         presence = {
             'action': 'presence',
@@ -110,7 +112,7 @@ class JIMmessage():
             }
         }
         return presence
-
+    @property
     def auth(self):
         auth_message = {
             'action': 'authenticate',
@@ -122,6 +124,7 @@ class JIMmessage():
         }
         return auth_message
 
+    @property
     def msg(self):
         msg = {
             'action': 'msg',
@@ -143,7 +146,7 @@ class JIMmessage():
     #         'password': self.client.password
     #     }
     #     return msg
-
+    @property
     def quit(self):
         quit = {
             'action': 'quit'
@@ -157,7 +160,7 @@ def start():
     client.connect()
     # mode = input('Введите режим работы: {} или {}: '.format('r', 'w'))
     mode = 'w'
-    client.nickname = input('Введите Ваше имя: ')
+    client.login_name = input('Введите Ваш login: ')
     client.password = input('Введите Ваш пароль: ')
     read_loop = Thread(target=client.mainloop_r)
     write_loop = Thread(target=client.mainloop_w)
